@@ -6,29 +6,59 @@ import circulo from '../assets/circulo.png'
 import flor from '../assets/flor.png'
 import fogo from '../assets/fogo.png'
 
+
+const images = [
+  [circulo, quadrado],
+  [fogo, flor],
+  [fogo, flor]
+]
+
+const types = {
+  BACKGROUND: 0,
+  ELEMENT: 1,
+  OTHER: 2
+}
+
+const MENU_OPTIONS = [
+  {
+    name: "Background",
+    type: types.BACKGROUND,
+  },
+  {
+    name: "Elemento 1",
+    type: types.ELEMENT,
+  },
+  // {
+  //   name: "Elemento 2",
+  //   type: types.ELEMENT,
+  // },
+  // {
+  //   name: "Outros",
+  //   type: types.OTHER,
+  // },
+]
+
 function App() {
-  const [selectedTier, selectTier] = useState("")
-  const [layers, setLayers] = useState([
-    { name: "circle", image: null },
-    { name: "element", image: null },
-    { name: "element2", image: null },
-    { name: "others", image: null }
-  ])
-  const images = [
-    { type: "circle", src: circulo },
-    { type: "circle", src: quadrado },
-    { type: "element", src: fogo },
-    { type: "element", src: flor },
-    { type: "element2", src: fogo },
-    { type: "element2", src: flor },
-  ]
+  const [selectedType, selectType] = useState(0)
+  const [layers, setLayers] = useState(MENU_OPTIONS.map(_ => null))
+  // const images = [
+  //   { type: "circle", src: circulo },
+  //   { type: "circle", src: quadrado },
+  //   { type: "element", src: fogo },
+  //   { type: "element", src: flor },
+  //   { type: "element2", src: fogo },
+  //   { type: "element2", src: flor },
+  // ]
+  // const images = {
+  //   circle: [circulo, quadrado],
+  //   element: [fogo, flor],
+  //   element2: [fogo, flor]
+  // }
+  
+
   const useStyles = makeStyles({
-    canvasCircle: {
+    canvas: {
       border: "1px solid",
-      position: "absolute",
-      left: 0,
-      top: 0,
-      zIndex: 0
     },
     canvasElement: {
       border: "1px solid",
@@ -62,26 +92,28 @@ function App() {
   const classes = useStyles()
 
   const handleCircle = (e) => {
-    selectTier("circle")
+    selectType("circle")
   }
   const handleElement = (e) => {
-    selectTier("element")
+    selectType("element")
   }
   const handleElement2 = (e) => {
-    selectTier("element2")
+    selectType("element2")
   }
   const handleOthers = (e) => {
-    selectTier("others")
+    selectType("others")
   }
 
-  const getType = e => e.target.alt.split("-")[2]
 
   const handleImageClick = (e) => {
-    console.log(e.target)
-    console.log(getType(e))
-    setLayers(layers.map(v => v.name === getType(e) ? { name: v.name, image: e.target } : v))
+    // console.log(e.target)
+    console.log({selectedType})
+    const newLayers = layers.map((l, i) => selectedType == i ? e.target : l)
+    console.log({newLayers})
+    setLayers(newLayers)
+        // setLayers(layers.map(v => v.name === getType(e) ? { name: v.name, image: e.target } : v))
   }
-
+  
   const handleExport = (e) => {
     // let canvas = document.getElementById("canvas-circle")
     // let image = canvas.toDataURL("image/png")
@@ -91,34 +123,39 @@ function App() {
     // document.body.appendChild(link);
     // link.click();
     // link.remove();
-    console.log("Layers: ", layers)
+    // console.log("Layers: ", layers)
     console.log("Images: ", images)
-    console.log("selectedTier: ", selectedTier)
+    console.log("selectedType: ", selectedType)
 
   }
+
   function drawLayers() {
     console.log("Drawing Layers")
     let canvas = document.getElementById("canvas")
     console.log("canvas", canvas)
     let ctx = canvas.getContext("2d")
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    layers.forEach(layer => layer.image ? ctx.drawImage(layer.image, 0, 0) : null)
+    console.log({layers})
+    layers.forEach(layer => layer && ctx.drawImage(layer, 0, 0))
   }
+
+
   useEffect(drawLayers, [layers])
+
   return (
     <div className={classes.app}>
       <div className={classes.buttons}>
-        <Button onClick={handleCircle}>Circulo</Button>
-        <Button onClick={handleElement}>Elemento 1 </Button>
-        <Button onClick={handleElement2}>Elemento 2</Button>
-        <Button onClick={handleOthers}>Outros</Button>
+        {
+          MENU_OPTIONS.map(opt => 
+            <Button onClick={_ => selectType(opt.type)}>{opt.name}</Button>)
+        }
         <Button onClick={handleExport}>Export</Button>
       </div>
       <div className={classes.images}>
         {
-          images
-            .filter((v => v.type === selectedTier))
-            .map(v => <img src={v.src} alt={`sigil-img-${v.type}`} className={classes.image} onClick={handleImageClick} />)
+          images[selectedType]
+              .map(v => 
+                <img src={v} alt={`sigil-img`} className={classes.image} onClick={handleImageClick} />)
         }
       </div>
       <canvas className={classes.canvas} id="canvas" width="800" height="800" />
